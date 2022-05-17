@@ -1,0 +1,15 @@
+[package]
+name = "max553x"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+readme = "ReadMe.md"
+description = "Driver for the 12-bit MAX5532–MAX5535 DACs."
+documentation = "https://docs.rs/max553x"
+repository = "https://github.com/reitermarkus/max553x-rs"
+homepage = "https://github.com/reitermarkus/max553x-rs"
+keywords = ["max553x", "max5532", "max5533", "max5534", "max5535", "dac"]
+categories = ["embedded", "hardware-support", "no-std"]
+
+[dependencies]
+embedded-hal = "0.2"
