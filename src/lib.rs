@@ -15,24 +15,6 @@ pub enum Standby {}
 /// Marks a DAC in shutdown mode.
 pub enum Shutdown {}
 
-pub trait SendCommand {
-  type Error;
-
-  fn send_command(&mut self, command: [u8; 2]) -> Result<(), Self::Error>;
-}
-
-impl<T> SendCommand for T
-where
-  T: Write<u8>
-{
-  type Error = T::Error;
-
-  fn send_command(&mut self, command: [u8; 2]) -> Result<(), Self::Error> {
-    self.write(&command)?;
-    Ok(())
-  }
-}
-
 const fn command_bytes(control_bits: u8, data_bits: u16) -> [u8; 2] {
   [
     (control_bits << 4) | ((data_bits >> 8) as u8 & 0xf),
@@ -54,26 +36,26 @@ macro_rules! impl_into_normal_shutdown {
   (@without_vref $max_ty:ident) => {
     /// Enter normal operation mode.
     pub fn into_normal(mut self) -> Result<$max_ty<W, Normal>, W::Error> {
-      self.writer.send_command(command_bytes(0b1101, 0))?;
+      self.writer.write(&command_bytes(0b1101, 0))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
 
     /// Enter shutdown mode.
     pub fn into_shutdown(mut self) -> Result<$max_ty<W, Shutdown>, W::Error> {
-      self.writer.send_command(command_bytes(0b1110, 0))?;
+      self.writer.write(&command_bytes(0b1110, 0))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
   };
   (@with_vref $max_ty:ident) => {
     /// Enter normal operation mode and set internal voltage reference.
     pub fn into_normal(mut self, vref: Vref) -> Result<$max_ty<W, Normal>, W::Error> {
-      self.writer.send_command(vref_command_bytes(0b1101, vref))?;
+      self.writer.write(&vref_command_bytes(0b1101, vref))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
 
     /// Enter shutdown mode and set internal voltage reference.
     pub fn into_shutdown(mut self, vref: Vref) -> Result<$max_ty<W, Shutdown>, W::Error> {
-      self.writer.send_command(vref_command_bytes(0b1110, vref))?;
+      self.writer.write(&vref_command_bytes(0b1110, vref))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
   };
@@ -107,18 +89,18 @@ macro_rules! impl_max {
 
     impl<W, MODE> $max_ty<W, MODE>
     where
-      W: SendCommand
+      W: Write<u8>
     {
       /// Load input register A from shift register.
       #[inline]
       pub fn input_a(&mut self, value: u16) -> Result<(), W::Error> {
-        self.writer.send_command(command_bytes(0b0001, value))
+        self.writer.write(&command_bytes(0b0001, value))
       }
 
       /// Load input register B from shift register.
       #[inline]
       pub fn input_b(&mut self, value: u16) -> Result<(), W::Error> {
-        self.writer.send_command(command_bytes(0b0010, value))
+        self.writer.write(&command_bytes(0b0010, value))
       }
 
       impl_into_normal_shutdown!($max_ty);
@@ -150,7 +132,7 @@ macro_rules! impl_standby {
   (@inner $max_ty:ident) => {
     /// Enter standby mode and set internal voltage reference.
     pub fn into_standby(mut self, vref: Vref) -> Result<$max_ty<W, Standby>, W::Error> {
-      self.writer.send_command(vref_command_bytes(0b1100, vref))?;
+      self.writer.write(&vref_command_bytes(0b1100, vref))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
   };
@@ -160,25 +142,25 @@ macro_rules! impl_normal {
   ($max_ty:ident) => {
     impl<W> $max_ty<W, Normal>
     where
-      W: SendCommand
+      W: Write<u8>
     {
       /// Load DAC registers A and B from respective input registers
       /// and update respective DAC outputs.
       #[inline]
       pub fn dac_ab(&mut self, value: u16) -> Result<(), W::Error> {
-        self.writer.send_command(command_bytes(0b1000, value))
+        self.writer.write(&command_bytes(0b1000, value))
       }
 
       /// Load input and DAC register A from shift register A and
       /// load DAC register B from input register B.
       pub fn input_a_dac_ab(&mut self, value: u16) -> Result<(), W::Error> {
-        self.writer.send_command(command_bytes(0b1001, value))
+        self.writer.write(&command_bytes(0b1001, value))
       }
 
       /// Load input and DAC register B from shift register B and
       /// load DAC register A from input register A.
       pub fn input_b_dac_ab(&mut self, value: u16) -> Result<(), W::Error> {
-        self.writer.send_command(command_bytes(0b1010, value))
+        self.writer.write(&command_bytes(0b1010, value))
       }
 
       impl_standby!($max_ty);
@@ -219,7 +201,7 @@ macro_rules! impl_standby_shutdown {
   (@inner $max_ty:ident, $mode_ty:ident) => {
     impl<W> $max_ty<W, $mode_ty>
     where
-      W: SendCommand
+      W: Write<u8>
     {
       /// Load DAC registers A and B from respective input registers, update
       /// respective DAC outputs and enter normal operation mode.
