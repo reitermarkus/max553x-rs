@@ -1,6 +1,7 @@
 //! Driver for MAX5532/MAX5533/MAX5534/MAX5535 DACs.
 //!
 //! Implemented according to <https://datasheets.maximintegrated.com/en/ds/MAX5532-MAX5535.pdf>.
+#![no_std]
 
 use core::marker::PhantomData;
 
