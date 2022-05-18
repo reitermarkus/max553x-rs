@@ -31,10 +31,10 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
 
 macro_rules! impl_into_mode {
   ($desc:expr, Max5533, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
-    impl_into_mode!(@with_vref $desc, $max_ty, $mode_ty, $fn_name, $control_bits);
+    impl_into_mode!(@with_vref $desc, Max5533, $mode_ty, $fn_name, $control_bits);
   };
   ($desc:expr, Max5535, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
-    impl_into_mode!(@with_vref $desc, $max_ty, $mode_ty, $fn_name, $control_bits);
+    impl_into_mode!(@with_vref $desc, Max5535, $mode_ty, $fn_name, $control_bits);
   };
   ($desc:expr, $max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
     /// Enter
