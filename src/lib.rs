@@ -29,34 +29,37 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
   ]
 }
 
+macro_rules! impl_into_mode {
+  ($max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    pub fn $fn_name(mut self) -> Result<$max_ty<W, $mode_ty>, W::Error> {
+      self.writer.write(&command_bytes($control_bits, 0))?;
+      Ok($max_ty { writer: self.writer, _mode: PhantomData })
+    }
+  };
+  (@with_vref $max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    pub fn $fn_name(mut self, vref: Vref) -> Result<$max_ty<W, $mode_ty>, W::Error> {
+      self.writer.write(&vref_command_bytes($control_bits, vref))?;
+      Ok($max_ty { writer: self.writer, _mode: PhantomData })
+    }
+  };
+}
+
 macro_rules! impl_into_normal_shutdown {
   (Max5533) => { impl_into_normal_shutdown!(@with_vref Max5533); };
   (Max5535) => { impl_into_normal_shutdown!(@with_vref Max5535); };
   ($max_ty:ident) => {
     /// Enter normal operation mode.
-    pub fn into_normal(mut self) -> Result<$max_ty<W, Normal>, W::Error> {
-      self.writer.write(&command_bytes(0b1101, 0))?;
-      Ok($max_ty { writer: self.writer, _mode: PhantomData })
-    }
+    impl_into_mode!($max_ty, Normal, into_normal, 0b1101);
 
     /// Enter shutdown mode.
-    pub fn into_shutdown(mut self) -> Result<$max_ty<W, Shutdown>, W::Error> {
-      self.writer.write(&command_bytes(0b1110, 0))?;
-      Ok($max_ty { writer: self.writer, _mode: PhantomData })
-    }
+    impl_into_mode!($max_ty, Shutdown, into_shutdown, 0b1110);
   };
   (@with_vref $max_ty:ident) => {
     /// Enter normal operation mode and set internal voltage reference.
-    pub fn into_normal(mut self, vref: Vref) -> Result<$max_ty<W, Normal>, W::Error> {
-      self.writer.write(&vref_command_bytes(0b1101, vref))?;
-      Ok($max_ty { writer: self.writer, _mode: PhantomData })
-    }
+    impl_into_mode!(@with_vref $max_ty, Normal, into_normal, 0b1101);
 
     /// Enter shutdown mode and set internal voltage reference.
-    pub fn into_shutdown(mut self, vref: Vref) -> Result<$max_ty<W, Shutdown>, W::Error> {
-      self.writer.write(&vref_command_bytes(0b1110, vref))?;
-      Ok($max_ty { writer: self.writer, _mode: PhantomData })
-    }
+    impl_into_mode!(@with_vref $max_ty, Shutdown, into_shutdown, 0b1110);
   };
 }
 
