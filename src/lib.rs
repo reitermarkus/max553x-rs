@@ -30,8 +30,14 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
 }
 
 macro_rules! impl_into_mode {
+  ($desc:expr, Max5532, Standby, $fn_name:ident, $control_bits:expr) => {
+    // MAX5532 does not have stabdby mode.
+  };
   ($desc:expr, Max5533, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
     impl_into_mode!(@with_vref $desc, Max5533, $mode_ty, $fn_name, $control_bits);
+  };
+  ($desc:expr, Max5534, Standby, $fn_name:ident, $control_bits:expr) => {
+    // MAX5534 doesn not have standby mode.
   };
   ($desc:expr, Max5535, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
     impl_into_mode!(@with_vref $desc, Max5535, $mode_ty, $fn_name, $control_bits);
@@ -124,15 +130,6 @@ impl_max!(
   Max5535
 );
 
-macro_rules! impl_standby {
-  (Max5533) => { impl_standby!(@inner Max5533); };
-  (Max5535) => { impl_standby!(@inner Max5535); };
-  ($max_ty:ident) => {};
-  (@inner $max_ty:ident) => {
-    impl_into_mode!("standby", $max_ty, Standby, into_standby, 0b1100);
-  };
-}
-
 macro_rules! impl_normal {
   ($max_ty:ident) => {
     impl<W> $max_ty<W, Normal>
@@ -158,7 +155,7 @@ macro_rules! impl_normal {
         self.writer.write(&command_bytes(0b1010, value))
       }
 
-      impl_standby!($max_ty);
+      impl_into_mode!("standby", $max_ty, Standby, into_standby, 0b1100);
     }
   }
 }
