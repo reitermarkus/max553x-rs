@@ -30,13 +30,25 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
 }
 
 macro_rules! impl_into_mode {
-  ($max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+  ($desc:expr, Max5533, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    impl_into_mode!(@with_vref $desc, $max_ty, $mode_ty, $fn_name, $control_bits);
+  };
+  ($desc:expr, Max5535, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    impl_into_mode!(@with_vref $desc, $max_ty, $mode_ty, $fn_name, $control_bits);
+  };
+  ($desc:expr, $max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    /// Enter
+    #[doc = $desc]
+    /// mode.
     pub fn $fn_name(mut self) -> Result<$max_ty<W, $mode_ty>, W::Error> {
       self.writer.write(&command_bytes($control_bits, 0))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
     }
   };
-  (@with_vref $max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+  (@with_vref $desc:expr, $max_ty:ident, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
+    /// Enter
+    #[doc = $desc]
+    /// mode and set the internal voltage reference.
     pub fn $fn_name(mut self, vref: Vref) -> Result<$max_ty<W, $mode_ty>, W::Error> {
       self.writer.write(&vref_command_bytes($control_bits, vref))?;
       Ok($max_ty { writer: self.writer, _mode: PhantomData })
@@ -45,21 +57,9 @@ macro_rules! impl_into_mode {
 }
 
 macro_rules! impl_into_normal_shutdown {
-  (Max5533) => { impl_into_normal_shutdown!(@with_vref Max5533); };
-  (Max5535) => { impl_into_normal_shutdown!(@with_vref Max5535); };
   ($max_ty:ident) => {
-    /// Enter normal operation mode.
-    impl_into_mode!($max_ty, Normal, into_normal, 0b1101);
-
-    /// Enter shutdown mode.
-    impl_into_mode!($max_ty, Shutdown, into_shutdown, 0b1110);
-  };
-  (@with_vref $max_ty:ident) => {
-    /// Enter normal operation mode and set internal voltage reference.
-    impl_into_mode!(@with_vref $max_ty, Normal, into_normal, 0b1101);
-
-    /// Enter shutdown mode and set internal voltage reference.
-    impl_into_mode!(@with_vref $max_ty, Shutdown, into_shutdown, 0b1110);
+    impl_into_mode!("normal operation", $max_ty, Normal,   into_normal,   0b1101);
+    impl_into_mode!("shutdown",         $max_ty, Shutdown, into_shutdown, 0b1110);
   };
 }
 
@@ -129,11 +129,7 @@ macro_rules! impl_standby {
   (Max5535) => { impl_standby!(@inner Max5535); };
   ($max_ty:ident) => {};
   (@inner $max_ty:ident) => {
-    /// Enter standby mode and set internal voltage reference.
-    pub fn into_standby(mut self, vref: Vref) -> Result<$max_ty<W, Standby>, W::Error> {
-      self.writer.write(&vref_command_bytes(0b1100, vref))?;
-      Ok($max_ty { writer: self.writer, _mode: PhantomData })
-    }
+    impl_into_mode!("standby", $max_ty, Standby, into_standby, 0b1100);
   };
 }
 
