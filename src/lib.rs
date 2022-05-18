@@ -32,8 +32,7 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
 macro_rules! impl_into_normal_shutdown {
   (Max5533) => { impl_into_normal_shutdown!(@with_vref Max5533); };
   (Max5535) => { impl_into_normal_shutdown!(@with_vref Max5535); };
-  ($max_ty:ident) => {};
-  (@without_vref $max_ty:ident) => {
+  ($max_ty:ident) => {
     /// Enter normal operation mode.
     pub fn into_normal(mut self) -> Result<$max_ty<W, Normal>, W::Error> {
       self.writer.write(&command_bytes(0b1101, 0))?;
@@ -61,13 +60,10 @@ macro_rules! impl_into_normal_shutdown {
   };
 }
 
-
 macro_rules! impl_max {
-  ($(#[$outer:meta]),* $max_ty:ident) => {
-
-
+  ($(#[$attr:meta]),* $max_ty:ident) => {
     $(
-      #[$outer]
+      #[$attr]
     )*
     #[derive(Debug)]
     pub struct $max_ty<W, MODE> {
