@@ -62,13 +62,6 @@ macro_rules! impl_into_mode {
   };
 }
 
-macro_rules! impl_into_normal_shutdown {
-  ($max_ty:ident) => {
-    impl_into_mode!("normal operation", $max_ty, Normal,   into_normal,   0b1101);
-    impl_into_mode!("shutdown",         $max_ty, Shutdown, into_shutdown, 0b1110);
-  };
-}
-
 macro_rules! impl_max {
   ($(#[$attr:meta]),* $max_ty:ident) => {
     $(
@@ -108,7 +101,8 @@ macro_rules! impl_max {
         self.writer.write(&command_bytes(0b0010, value))
       }
 
-      impl_into_normal_shutdown!($max_ty);
+      impl_into_mode!("normal operation", $max_ty, Normal,   into_normal,   0b1101);
+      impl_into_mode!("shutdown",         $max_ty, Shutdown, into_shutdown, 0b1110);
     }
   }
 }
