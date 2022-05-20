@@ -32,13 +32,13 @@ const fn vref_command_bytes(control_bits: u8, vref: Vref) -> [u8; 2] {
 
 macro_rules! impl_into_mode {
   ($desc:expr, Max5532, Standby, $fn_name:ident, $control_bits:expr) => {
-    // MAX5532 does not have stabdby mode.
+    // MAX5532 does not have standby mode.
   };
   ($desc:expr, Max5533, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
     impl_into_mode!(@with_vref $desc, Max5533, $mode_ty, $fn_name, $control_bits);
   };
   ($desc:expr, Max5534, Standby, $fn_name:ident, $control_bits:expr) => {
-    // MAX5534 doesn not have standby mode.
+    // MAX5534 does not have standby mode.
   };
   ($desc:expr, Max5535, $mode_ty:ident, $fn_name:ident, $control_bits:expr) => {
     impl_into_mode!(@with_vref $desc, Max5535, $mode_ty, $fn_name, $control_bits);
