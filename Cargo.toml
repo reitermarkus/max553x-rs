@@ -13,3 +13,6 @@ categories = ["embedded", "hardware-support", "no-std"]
 
 [dependencies]
 embedded-hal = "0.2"
+
+[dev-dependencies]
+embedded-hal-mock = "0.8"
