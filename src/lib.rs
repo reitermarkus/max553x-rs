@@ -116,14 +116,14 @@ macro_rules! impl_max {
       #[$attr]
     )*
     #[derive(Debug)]
-    pub struct $max_ty<W, MODE> {
+    pub struct $max_ty<W, MODE = Shutdown> {
       writer: W,
       _mode: PhantomData<MODE>,
     }
 
     impl<W, MODE> $max_ty<W, MODE> {
       /// Create a new DAC with the given writer.
-      pub fn new(writer: W) -> $max_ty<W, Shutdown> {
+      pub const fn new(writer: W) -> $max_ty<W, Shutdown> {
         $max_ty { writer, _mode: PhantomData }
       }
 
