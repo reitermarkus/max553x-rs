@@ -116,12 +116,12 @@ macro_rules! impl_max {
       #[$attr]
     )*
     #[derive(Debug)]
-    pub struct $max_ty<W, MODE = Shutdown> {
+    pub struct $max_ty<W, MODE> {
       writer: W,
       _mode: PhantomData<MODE>,
     }
 
-    impl<W, MODE> $max_ty<W, MODE> {
+    impl<W> $max_ty<W, Shutdown> {
       /// Create a new DAC with the given writer.
       pub const fn new(writer: W) -> $max_ty<W, Shutdown> {
         $max_ty { writer, _mode: PhantomData }
@@ -152,7 +152,7 @@ macro_rules! impl_max {
       impl_into_mode!("normal operation", $max_ty, Normal,   into_normal,   0b1101);
       impl_into_mode!("shutdown",         $max_ty, Shutdown, into_shutdown, 0b1110);
     }
-    
+
     impl<W> $max_ty<W, Normal>
     where
       W: Write<u8>
@@ -178,7 +178,7 @@ macro_rules! impl_max {
 
       impl_into_mode!("standby", $max_ty, Standby, into_standby, 0b1100);
     }
-    
+
     impl_standby_shutdown!($max_ty);
   }
 }
