@@ -12,7 +12,7 @@ keywords = ["max5532", "max5533", "max5534", "max5535", "dac"]
 categories = ["embedded", "hardware-support", "no-std"]
 
 [dependencies]
-embedded-hal = "0.2"
+embedded-hal = "1.0"
 
 [dev-dependencies]
 embedded-hal-mock = "0.8"
