@@ -16,6 +16,3 @@ embedded-hal = "1"
 
 [dev-dependencies]
 embedded-hal-mock = "0.10"
-
-[patch.crates-io]
-embedded-hal-mock = { git = "https://github.com/dbrgn/embedded-hal-mock" }
